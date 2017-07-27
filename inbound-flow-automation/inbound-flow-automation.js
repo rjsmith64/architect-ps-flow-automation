@@ -8,13 +8,13 @@
 //   --location      ( defaults to 'dev' )
 //   --scriptingPath ( defaults to 'architect-scripting' )
 // *************************************************************************************************
-var CommandLineHelper     = require('../utility/commandLineHelper');
+// var CommandLineHelper     = require('../utility/commandLineHelper');
+var CommandLineHelper   = require('../common/commandLineHelper');
 
 var commandLineParameters = new CommandLineHelper({ 
-    clientId: 'not_set',             // requires defined value
-    clientSecret: 'not_set',         // requires defined value
-    token: 'not_set', 
-    configFile: './config.json',
+    clientId: undefined,
+    clientSecret: undefined,
+    token: undefined,
     flowName: undefined
     });
 
@@ -34,27 +34,55 @@ var session       = scripting.environment.archSession;       // Session support 
 var taskFactory   = scripting.factories.archFactoryTasks;    // Factory to create tasks
 var archEnums     = scripting.enums.archEnums;
 
+var taskFunctions = {};
+
+taskFunctions.createPlayAudioTTSTask = function(flow, taskConfig) {
+    var params = taskConfig.parameters;
+    var task = taskFactory.addTask(flow, taskConfig.name, taskConfig.isStartingAction);
+    var playAudioAction = actionFactory.addActionPlayAudio(task, taskConfig.name, params.message);
+    
+    actionFactory.addActionDisconnect(task, 'Disconnect - Goodbye', playAudioAction);
+    return task;
+}
+
 function scriptMain() {
     var flowName = commandLineParameters.flowName;
     var flowDescription = config.flowDescription;
-   
-
     
     return flowFactory.createFlowInboundCallAsync(flowName, flowDescription, languages.englishUnitedStates, function (archInboundCallFlow) {
 
-        archInboundCallFlow.initialAudio.setDefaultCaseLiteralTTS('welcome to the flow');
+        archInboundCallFlow.initialAudio.setDefaultCaseLiteralTTS(config.flowInitialAudio);
+                
+        taskFunctions[config.tasks[0].template](archInboundCallFlow, config.tasks[0]);
+        
+        // Publish the flow.  This will also validate the flow as part of the publish operation.
+        return archInboundCallFlow.checkInAsync(true);
+
+   
+        /*
+        var decisionAction = actionFactory.addActionDecision(exampleTask, 'check equality', '5==3');
+        // Add a switch action to the no output on the decision
+        var switchAction = actionFactory.addActionSwitch(decisionAction.outputNo, 'check more');
+        // On the default output for the switch action, add a disconnect action
+        actionFactory.addActionDisconnect(switchAction.outputDefault, 'default disconnect');
+        // On the first output for the switch, add a jump to menu action that will go to the support menu
+        actionFactory.addActionJumpToMenu(switchAction.getOutputByIndex(0), 'jump to support menu', supportMenu);
+        // for the yes output on the decision, add a disconnect with the name "5 equals 3 ? ;-)"
+        actionFactory.addActionDisconnect(decisionAction.outputYes, '5 equals 3');
+        // now add a disconnect action at the end of the task.
+        actionFactory.addActionDisconnect(exampleTask, 'all done');
+        */
+        
 
         // Create a menu and make it the starting menu for the flow.
-        var mainMenu = menuFactory.addMenu(archInboundCallFlow, 'top menu', 'this is the top menu.  press 2 for support, 3 or 8 for the jump task, 6 for bob or 9 to disconnect', true);
-
-
-        var transferAction = menuFactory.addMenuTransferToUser(mainMenu, 'transfer to jim', '7', 'now transferring to Jim');
+        //var mainMenu = menuFactory.addMenu(archInboundCallFlow, 'top menu', 'this is the top menu.  press 2 for support, 3 or 8 for the jump task, 6 for bob or 9 to disconnect', true);
+        //var transferAction = menuFactory.addMenuTransferToUser(mainMenu, 'transfer to R. J.', '7', 'now transferring to R. J.');
 
         /*
-        transferAction .actionTransferToUser.targetUser.setLiteralByUserNameAsync('jim.ullyot@inin.com', function(targetUserVal) {
+        transferAction .actionTransferToUser.targetUser.setLiteralByUserNameAsync('rj.smith@genesys.com', function(targetUserVal) {
             // You could do additional work here.  The target user value from the transfer to user action will be passed
             // in as a parameter since the setLiteralByUserNameAsync method was called on it.
-            logger.logNote('The user jim.ullyot@inin.com was successfully set for the user value ' + targetUserVal.logStr);
+            logger.logNote('The user rj.smith@genesys.com was successfully set for the user value ' + targetUserVal.logStr);
         });
         
 
@@ -107,10 +135,6 @@ function scriptMain() {
         */
 
         
-        // Publish the flow.  This will also validate the flow as part of the publish operation.
-        // We're also going to pause execution
-        return archInboundCallFlow.checkInAsync(true);
-        
     });
     
 }
@@ -118,6 +142,5 @@ function scriptMain() {
 function initialize() {
     session.startWithAuthToken(commandLineParameters.location, scriptMain, commandLineParameters.token);        
 }
-
 
 initialize();

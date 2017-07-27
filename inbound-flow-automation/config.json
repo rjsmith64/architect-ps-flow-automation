@@ -1,3 +1,29 @@
 {
-    "flowDescription": "Test inbound flow created by PS script."
+    "flowDescription": "Test inbound flow created by PS script.",
+    "flowInitialAudio": "Thank you for contacting the PureCloud Contact Center of Excellence!",
+
+    "tasks": [
+        {
+            "id": 1,            
+            "name": "Play TTS Message",
+            "template": "createPlayAudioTTSTask",
+            "isStartingAction": true,
+            "nextTask": null,
+            "parameters": {
+                "message": "This is the first Task. I'm glad you can hear it!"
+            }
+            
+        },
+        {
+            "id": 2,
+            "name": "Play Other TTS Message and Disconnect",
+            "template": "createPlayAudioTTSTask",
+            "isStartingAction": false,
+            "nextTask": null,
+            "parameters": {
+                "message": "This is the second Task. Goodbye for now."
+            }
+        }
+    ]
+    
 }
