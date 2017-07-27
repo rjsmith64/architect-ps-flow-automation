@@ -10,6 +10,7 @@
 // *************************************************************************************************
 // var CommandLineHelper     = require('../utility/commandLineHelper');
 var CommandLineHelper   = require('../common/commandLineHelper');
+var _                   = require('underscore');
 
 var commandLineParameters = new CommandLineHelper({ 
     clientId: undefined,
@@ -39,10 +40,24 @@ var taskFunctions = {};
 taskFunctions.createPlayAudioTTSTask = function(flow, taskConfig) {
     var params = taskConfig.parameters;
     var task = taskFactory.addTask(flow, taskConfig.name, taskConfig.isStartingAction);
-    var playAudioAction = actionFactory.addActionPlayAudio(task, taskConfig.name, params.message);
+    var playAudioAction = actionFactory.addActionPlayAudio(task, params.ttsActionName, params.ttsActionAudio);
     
-    actionFactory.addActionDisconnect(task, 'Disconnect - Goodbye', playAudioAction);
+    // Add disconnect action if next task not defined
+    if (!taskConfig.nextTaskId) {
+        actionFactory.addActionDisconnect(task, params.disconnectActionName, playAudioAction);
+    }
+    
     return task;
+}
+
+function getTaskById(taskId){
+    var returnTask = null;
+    _.each(config.tasks, function(taskConfig){
+        if(taskConfig.id == taskId) {
+            returnTask = taskConfig.archTask;
+        }
+    });
+    return returnTask;
 }
 
 function scriptMain() {
@@ -52,8 +67,17 @@ function scriptMain() {
     return flowFactory.createFlowInboundCallAsync(flowName, flowDescription, languages.englishUnitedStates, function (archInboundCallFlow) {
 
         archInboundCallFlow.initialAudio.setDefaultCaseLiteralTTS(config.flowInitialAudio);
-                
-        taskFunctions[config.tasks[0].template](archInboundCallFlow, config.tasks[0]);
+      
+        _.each(config.tasks, function(taskConfig){
+            taskConfig.archTask = taskFunctions[taskConfig.template](archInboundCallFlow, taskConfig);
+        });
+        
+        // Link nextTasks together
+        _.each(config.tasks, function(taskConfig){
+            if(taskConfig.nextTaskId){
+                actionFactory.addActionJumpToTask(taskConfig.archTask, 'Jump to Next Task', getTaskById(taskConfig.nextTaskId));
+            }
+        });
         
         // Publish the flow.  This will also validate the flow as part of the publish operation.
         return archInboundCallFlow.checkInAsync(true);
@@ -134,7 +158,6 @@ function scriptMain() {
         jumpToTask.actionJumpToTask.targetTask = exampleTask;
         */
 
-        
     });
     
 }
