@@ -51,13 +51,7 @@ taskFunctions.createPlayAudioTTSTask = function(flow, taskConfig) {
 }
 
 function getTaskById(taskId){
-    var returnTask = null;
-    _.each(config.tasks, function(taskConfig){
-        if(taskConfig.id == taskId) {
-            returnTask = taskConfig.archTask;
-        }
-    });
-    return returnTask;
+    return _.find(config.tasks, function(taskConfig){return taskConfig.id == taskId}).archTask;
 }
 
 function scriptMain() {
