@@ -8,7 +8,7 @@
             "name": "Play TTS Message",
             "template": "createPlayAudioTTSTask",
             "isStartingAction": true,
-            "nextTaskId": null,
+            "nextTaskId": 3,
             "parameters": {
                 "ttsActionName": "First TTS Audio",
                 "ttsActionAudio": "This is the first Task. I'm glad you can hear it!",
@@ -22,6 +22,18 @@
             "template": "createPlayAudioTTSTask",
             "isStartingAction": false,
             "nextTaskId": null,
+            "parameters": {
+                "ttsActionName": "Second TTS Audio",
+                "ttsActionAudio": "This is the second Task. Goodbye for now.",
+                "disconnectActionName": "Disconnect - Goodbye"
+            }
+        },
+        {
+            "id": 3,
+            "name": "Play Third TTS Message and Disconnect",
+            "template": "createPlayAudioTTSTask",
+            "isStartingAction": false,
+            "nextTaskId": 1,
             "parameters": {
                 "ttsActionName": "Second TTS Audio",
                 "ttsActionAudio": "This is the second Task. Goodbye for now.",
