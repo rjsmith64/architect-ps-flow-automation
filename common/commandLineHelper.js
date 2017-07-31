@@ -39,8 +39,7 @@ function CommandLineHelper(exampleSpecificRequiredParameters) {
     var exampleCommandLineParameters = {
         location: 'dev',
         scriptingPath: 'architect-scripting',
-        configFile: './config.json',
-        templatesFile: './templates.json'
+        configFile: './config.json'
     };
 
     // Did the caller pass in any additional parameters?  If so, add them.
@@ -93,11 +92,6 @@ function CommandLineHelper(exampleSpecificRequiredParameters) {
                                  'Specifies the optional config filename that should be used.');
                 break;
                 
-            case 'templatesFile':
-                commander.option('-m, --templatesFile [templatesFile]',
-                                 'Specifies the templates filename that should be used.');
-                break;
-
             default:
                 throw new Error('The command line parameter \'' + parameterName + '\' is not supported.');
         }
