@@ -157,7 +157,7 @@ function scriptMain() {
 }
 
 function initialize() {
-    session.startWithAuthToken(commandLineParameters.location, scriptMain, commandLineParameters.token);        
+    session.startWithClientIdAndSecret(commandLineParameters.location, scriptMain, commandLineParameters.clientId, commandLineParameters.clientSecret);
 }
 
 initialize();
